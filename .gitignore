@@ -1,5 +1,8 @@
 # === Project-specific (manual) ===
 
+# Build output
+/mydesk
+
 # Claude Code (whitelist)
 .claude/*
 !.claude/settings.json

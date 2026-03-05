@@ -2,8 +2,8 @@
 go = "latest"
 
 [tasks.build]
-run = "go build ./..."
-description = "Build all packages"
+run = "go build -o mydesk ."
+description = "Build binary"
 
 [tasks.test]
 run = "go test ./..."
@@ -20,3 +20,7 @@ description = "Format code"
 [tasks.fmt-check]
 run = "test -z $(gofmt -l .)"
 description = "Check formatting (CI)"
+
+[tasks.install]
+run = "go install ."
+description = "Install to GOPATH/bin"

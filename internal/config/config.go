@@ -1,0 +1,112 @@
+package config
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+const (
+	LinksConfFile      = "links.conf"
+	DefaultConfigDir   = "~/.config/mydesk"
+	EnvConfigDir       = "MYDESK_CONFIG_DIR"
+	EnvRepos           = "MYDESK_REPOS"
+)
+
+type Config struct {
+	ConfigDir string
+	Vars      map[string]string
+}
+
+func Load(configDir string) (*Config, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil, fmt.Errorf("cannot determine home directory: %w", err)
+	}
+
+	dir, err := resolveConfigDir(configDir, home)
+	if err != nil {
+		return nil, err
+	}
+
+	vars := map[string]string{
+		"HOME":  home,
+		"REPOS": resolveRepos(home),
+	}
+
+	return &Config{ConfigDir: dir, Vars: vars}, nil
+}
+
+func (c *Config) ExpandVars(path string) string {
+	if path == "~" {
+		return c.Vars["HOME"]
+	}
+	if strings.HasPrefix(path, "~/") {
+		path = c.Vars["HOME"] + path[1:]
+	}
+	for k, v := range c.Vars {
+		path = strings.ReplaceAll(path, "$"+k, v)
+	}
+	return path
+}
+
+func (c *Config) LinksConfPath() string {
+	return filepath.Join(c.ConfigDir, LinksConfFile)
+}
+
+func resolveConfigDir(explicit string, home string) (string, error) {
+	// 1. explicit flag
+	if explicit != "" {
+		return expandHome(explicit, home), nil
+	}
+
+	// 2. environment variable
+	if env := os.Getenv(EnvConfigDir); env != "" {
+		return expandHome(env, home), nil
+	}
+
+	// 3. walk up from CWD looking for links.conf
+	if dir, ok := findUpward(LinksConfFile); ok {
+		return dir, nil
+	}
+
+	// 4. default
+	def := expandHome(DefaultConfigDir, home)
+	if _, err := os.Stat(def); err == nil {
+		return def, nil
+	}
+
+	return "", fmt.Errorf("cannot find config directory: no %s found in parent directories, and %s does not exist.\nUse --config-dir or set %s", LinksConfFile, DefaultConfigDir, EnvConfigDir)
+}
+
+func resolveRepos(home string) string {
+	if env := os.Getenv(EnvRepos); env != "" {
+		return expandHome(env, home)
+	}
+	return filepath.Join(home, "Repositories")
+}
+
+func findUpward(filename string) (string, bool) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", false
+	}
+	for {
+		if _, err := os.Stat(filepath.Join(dir, filename)); err == nil {
+			return dir, true
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", false
+		}
+		dir = parent
+	}
+}
+
+func expandHome(path, home string) string {
+	if strings.HasPrefix(path, "~/") {
+		return home + path[1:]
+	}
+	return path
+}
