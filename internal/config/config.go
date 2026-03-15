@@ -30,12 +30,44 @@ func Load(configDir string) (*Config, error) {
 		return nil, err
 	}
 
+	if err := validateConfigDir(dir, home); err != nil {
+		return nil, err
+	}
+
 	vars := map[string]string{
 		"HOME":  home,
 		"REPOS": resolveRepos(home),
 	}
 
 	return &Config{ConfigDir: dir, Vars: vars}, nil
+}
+
+// validateConfigDir rejects config directories that coincide with native
+// directory targets. Using e.g. ~/.config as config-dir would cause the
+// config/ native directory to create self-referencing symlinks.
+func validateConfigDir(dir, home string) error {
+	forbidden := []struct {
+		path  string
+		label string
+	}{
+		{home, "~ (home/ native dir target)"},
+		{filepath.Join(home, ".config"), "~/.config (config/ native dir target)"},
+		{filepath.Join(home, ".ssh"), "~/.ssh (ssh/ native dir target)"},
+		{filepath.Join(home, "Library", "Application Support", "Code", "User"), "VS Code User dir (vscode/ native dir target)"},
+	}
+
+	resolved, _ := filepath.EvalSymlinks(dir)
+	if resolved == "" {
+		resolved = dir
+	}
+
+	for _, f := range forbidden {
+		if dir == f.path || resolved == f.path {
+			return fmt.Errorf("config directory must not be %s.\nThis would cause self-referencing symlinks. Use a subdirectory instead (e.g. %s/mydesk)",
+				f.label, f.path)
+		}
+	}
+	return nil
 }
 
 func (c *Config) ExpandVars(path string) string {

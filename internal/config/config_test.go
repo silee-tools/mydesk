@@ -69,6 +69,33 @@ func TestFindUpward(t *testing.T) {
 	}
 }
 
+func TestValidateConfigDir(t *testing.T) {
+	home := "/Users/testuser"
+
+	tests := []struct {
+		name    string
+		dir     string
+		wantErr bool
+	}{
+		{"home dir blocked", home, true},
+		{"dotconfig blocked", filepath.Join(home, ".config"), true},
+		{"ssh blocked", filepath.Join(home, ".ssh"), true},
+		{"vscode blocked", filepath.Join(home, "Library", "Application Support", "Code", "User"), true},
+		{"subdirectory ok", filepath.Join(home, ".config", "mydesk"), false},
+		{"other path ok", "/tmp/mydesk-config", false},
+		{"home subdir ok", filepath.Join(home, "dotfiles"), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateConfigDir(tt.dir, home)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateConfigDir(%q) error = %v, wantErr %v", tt.dir, err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestFindUpwardNotFound(t *testing.T) {
 	tmpDir := t.TempDir()
 	origDir, _ := os.Getwd()
