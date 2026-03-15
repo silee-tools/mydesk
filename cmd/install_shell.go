@@ -12,6 +12,11 @@ import (
 )
 
 func RunInstallShell(opts GlobalOpts) error {
+	if opts.ConfigDir == "" && os.Getenv("MYDESK_CONFIG_DIR") == "" {
+		return fmt.Errorf("install-shell requires --config-dir or MYDESK_CONFIG_DIR.\n" +
+			"Example: mydesk --config-dir ~/my-dotfiles install-shell")
+	}
+
 	cfg, err := config.Load(opts.ConfigDir)
 	if err != nil {
 		return err
