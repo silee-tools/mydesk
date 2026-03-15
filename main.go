@@ -83,11 +83,11 @@ Usage:
   mydesk [flags] <command> [args]
 
 Commands:
-  init <dir>   Create a new config repository scaffold
-  link         Create symlinks (native dirs + links.conf)
-  unlink       Remove symlinks and restore backups
-  diff         Detect drift between system and config repo
-  sync         Export current system state to config repo
+  init <dir>     Create a new config repository scaffold
+  link           Create symlinks (native dirs + links.conf)
+  unlink         Remove symlinks and restore backups
+  diff           Detect drift between system and config repo
+  sync           Export current system state to config repo
   setup          Full provisioning (brew, omz, mise, link, defaults, vscode)
   install-shell  Write MYDESK_CONFIG_DIR to shell profile
   version        Print version

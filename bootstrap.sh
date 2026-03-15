@@ -4,8 +4,6 @@ set -euo pipefail
 # mydesk bootstrap - run on a fresh Mac:
 # bash <(curl -sL https://raw.githubusercontent.com/silee-tools/mydesk/main/bootstrap.sh)
 
-MYDESK_REPO="github.com/silee-tools/mydesk"
-
 echo "=== mydesk bootstrap ==="
 echo ""
 
@@ -27,19 +25,12 @@ if ! command -v brew &>/dev/null; then
 fi
 echo "✓ Homebrew"
 
-# --- Phase 3: Go ---
-if ! command -v go &>/dev/null; then
-    echo "Installing Go via Homebrew..."
-    brew install go
-fi
-echo "✓ Go $(go version | awk '{print $3}')"
-
-# --- Phase 4: Install mydesk ---
+# --- Phase 3: Install mydesk ---
 echo "Installing mydesk..."
-go install "${MYDESK_REPO}@latest"
-echo "✓ mydesk installed"
+brew install silee-tools/tap/mydesk
+echo "✓ mydesk $(mydesk version 2>/dev/null | awk '{print $2}')"
 
-# --- Phase 5: Guide ---
+# --- Phase 4: Guide ---
 echo ""
 echo "=== Next steps ==="
 echo ""
@@ -47,10 +38,13 @@ echo "1. Create a config repo (or clone your existing one):"
 echo "   mydesk init ~/my-dotfiles"
 echo "   # or: git clone git@github.com:YOU/dotfiles.git ~/my-dotfiles"
 echo ""
-echo "2. Add your config files and run:"
-echo "   cd ~/my-dotfiles"
+echo "2. Set up shell environment:"
+echo "   mydesk --config-dir ~/my-dotfiles install-shell"
+echo "   source ~/.zprofile"
+echo ""
+echo "3. Link config files:"
 echo "   mydesk link"
 echo ""
-echo "3. For full provisioning on a new machine:"
+echo "4. For full provisioning on a new machine:"
 echo "   mydesk --config-dir ~/my-dotfiles setup"
 echo ""
