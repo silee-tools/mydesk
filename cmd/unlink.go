@@ -26,6 +26,18 @@ func RunUnlink(opts GlobalOpts) error {
 	}
 
 	ui.Info("Unlinking %d entries", len(entries))
+
+	if !opts.DryRun && ui.IsInteractive() {
+		ok, err := ui.Confirm(fmt.Sprintf("Will unlink %d entries and restore backups. Continue?", len(entries)), false)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			ui.Info("Cancelled")
+			return nil
+		}
+	}
+
 	fmt.Println()
 
 	r := linker.New(entries, opts.DryRun).Unlink()

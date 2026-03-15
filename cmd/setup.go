@@ -31,6 +31,23 @@ func RunSetup(opts GlobalOpts) error {
 		{"VS Code extensions", func() error { return provision.VSCodeInstall(cfg.ConfigDir, runner) }},
 	}
 
+	if !opts.DryRun && ui.IsInteractive() {
+		fmt.Println()
+		ui.Info("Full provisioning (%d steps):", len(steps))
+		for i, step := range steps {
+			fmt.Printf("    %d. %s\n", i+1, step.name)
+		}
+
+		ok, err := ui.Confirm("Proceed?", true)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			ui.Info("Cancelled")
+			return nil
+		}
+	}
+
 	for i, step := range steps {
 		fmt.Println()
 		ui.Info("[%d/%d] %s", i+1, len(steps), ui.Bold(step.name))

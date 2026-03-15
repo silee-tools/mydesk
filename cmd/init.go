@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/silee-tools/mydesk/internal/ui"
 )
@@ -71,7 +72,21 @@ mydesk setup
 
 func RunInit(opts GlobalOpts, targetDir string) error {
 	if targetDir == "" {
-		return fmt.Errorf("target directory is required: mydesk init <directory>")
+		if !ui.IsInteractive() {
+			return fmt.Errorf("target directory is required: mydesk init <directory>")
+		}
+		dir, err := ui.ReadLine("Enter config directory path [~/my-dotfiles]: ")
+		if err != nil {
+			return err
+		}
+		if dir == "" {
+			dir = "~/my-dotfiles"
+		}
+		home, _ := os.UserHomeDir()
+		if strings.HasPrefix(dir, "~/") {
+			dir = filepath.Join(home, dir[2:])
+		}
+		targetDir = dir
 	}
 
 	absDir, err := filepath.Abs(targetDir)
