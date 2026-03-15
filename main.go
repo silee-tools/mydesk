@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime/debug"
 
 	"github.com/silee-tools/mydesk/cmd"
 	"github.com/silee-tools/mydesk/internal/ui"
@@ -47,8 +48,10 @@ func main() {
 		err = cmd.RunSync(opts)
 	case "setup":
 		err = cmd.RunSetup(opts)
+	case "install-shell":
+		err = cmd.RunInstallShell(opts)
 	case "version":
-		fmt.Printf("mydesk %s\n", version)
+		fmt.Printf("mydesk %s\n", resolveVersion())
 	case "help":
 		usage()
 	default:
@@ -63,6 +66,16 @@ func main() {
 	}
 }
 
+func resolveVersion() string {
+	if version != "dev" {
+		return version
+	}
+	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
+		return info.Main.Version
+	}
+	return version
+}
+
 func usage() {
 	fmt.Fprintf(os.Stderr, `mydesk - macOS config backup & sync tool (Mackup alternative)
 
@@ -75,9 +88,10 @@ Commands:
   unlink       Remove symlinks and restore backups
   diff         Detect drift between system and config repo
   sync         Export current system state to config repo
-  setup        Full provisioning (brew, omz, mise, link, defaults, vscode)
-  version      Print version
-  help         Show this help
+  setup          Full provisioning (brew, omz, mise, link, defaults, vscode)
+  install-shell  Write MYDESK_CONFIG_DIR to shell profile
+  version        Print version
+  help           Show this help
 
 Flags:
 `)

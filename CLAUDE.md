@@ -6,7 +6,7 @@ macOS config backup & sync tool (Mackup alternative)
 
 ```
 main.go                  # CLI 진입점 (서브커맨드 디스패처)
-cmd/                     # 서브커맨드 핸들러 (link, unlink, diff, sync, setup, init)
+cmd/                     # 서브커맨드 핸들러 (link, unlink, diff, sync, setup, init, install-shell)
 internal/
   ui/color.go            # ANSI 컬러 출력 (NO_COLOR 지원)
   config/config.go       # 전역 설정, 경로/변수 해석, 설정 레포 탐색
@@ -18,6 +18,7 @@ internal/
     config.go            # links.conf 파싱
     linker.go            # 심볼릭 링크 생성/제거 (백업 포함)
   drift/detector.go      # 드리프트 감지
+  shell/profile.go       # 셸 프로파일 감지 및 마커 블록 관리
   provision/             # 프로비저닝 모듈 (brew, vscode, omz, mise, defaults)
 ```
 

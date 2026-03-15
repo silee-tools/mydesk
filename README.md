@@ -5,6 +5,10 @@ macOS config backup & sync tool (Mackup alternative)
 ## 설치
 
 ```bash
+# Homebrew (권장)
+brew install silee-tools/tap/mydesk
+
+# 또는 Go
 go install github.com/silee-tools/mydesk@latest
 ```
 
@@ -36,13 +40,22 @@ cd ~/my-dotfiles && git init
 cp ~/.zshrc ~/my-dotfiles/home/.zshrc
 ```
 
-### 3. 심볼릭 링크 생성
+### 3. 셸 프로파일 설정
 
 ```bash
-mydesk --config-dir ~/my-dotfiles link
+mydesk --config-dir ~/my-dotfiles install-shell
+source ~/.zprofile  # 또는 셸 재시작
 ```
 
-### 4. 추가 매핑 (links.conf)
+이후 `--config-dir` 없이 사용 가능합니다.
+
+### 4. 심볼릭 링크 생성
+
+```bash
+mydesk link
+```
+
+### 5. 추가 매핑 (links.conf)
 
 네이티브 규약 외 경로는 `links.conf`에 선언:
 
@@ -51,14 +64,15 @@ mydesk --config-dir ~/my-dotfiles link
 $REPOS/my-org/some-repo/config -> ~/.some-config
 ```
 
-### 5. 커맨드
+### 6. 커맨드
 
 ```bash
-mydesk link       # 심볼릭 링크 생성
-mydesk unlink     # 심볼릭 링크 제거 + 백업 복원
-mydesk diff       # 시스템 vs 레포 드리프트 감지
-mydesk sync       # Brewfile, VS Code extensions 내보내기
-mydesk setup      # 전체 프로비저닝 (새 맥)
+mydesk link            # 심볼릭 링크 생성
+mydesk unlink          # 심볼릭 링크 제거 + 백업 복원
+mydesk diff            # 시스템 vs 레포 드리프트 감지
+mydesk sync            # Brewfile, VS Code extensions 내보내기
+mydesk setup           # 전체 프로비저닝 (새 맥)
+mydesk install-shell   # MYDESK_CONFIG_DIR를 셸 프로파일에 설정
 ```
 
 ### 글로벌 플래그
