@@ -73,6 +73,7 @@ mydesk diff            # 시스템 vs 레포 드리프트 감지
 mydesk sync            # Brewfile, VS Code extensions 내보내기
 mydesk setup           # 전체 프로비저닝 (새 맥)
 mydesk install-shell   # MYDESK_CONFIG_DIR를 셸 프로파일에 설정
+mydesk web             # Web UI 실행 (localhost:8080)
 ```
 
 ### 글로벌 플래그

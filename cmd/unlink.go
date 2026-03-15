@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/silee-tools/mydesk/internal/config"
+	"github.com/silee-tools/mydesk/internal/entry"
 	"github.com/silee-tools/mydesk/internal/linker"
 	"github.com/silee-tools/mydesk/internal/ui"
 )
@@ -14,7 +15,7 @@ func RunUnlink(opts GlobalOpts) error {
 		return err
 	}
 
-	entries, err := collectEntries(cfg)
+	entries, err := entry.Collect(cfg)
 	if err != nil {
 		return err
 	}

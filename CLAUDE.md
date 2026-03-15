@@ -6,11 +6,12 @@ macOS config backup & sync tool (Mackup alternative)
 
 ```
 main.go                  # CLI 진입점 (서브커맨드 디스패처)
-cmd/                     # 서브커맨드 핸들러 (link, unlink, diff, sync, setup, init, install-shell)
+cmd/                     # 서브커맨드 핸들러 (link, unlink, diff, sync, setup, init, install-shell, web)
 internal/
   ui/color.go            # ANSI 컬러 출력 (NO_COLOR 지원)
   config/config.go       # 전역 설정, 경로/변수 해석, 설정 레포 탐색
   exec/runner.go         # 외부 명령 실행 (dry-run 지원)
+  entry/collect.go       # 링크 엔트리 수집 (native + links.conf 병합)
   native/                # 네이티브 디렉토리 규약 (home→~, config→~/.config 등)
     native.go            # 규약 정의
     scanner.go           # 디렉토리 스캔 → LinkEntry 변환
@@ -20,6 +21,8 @@ internal/
   drift/detector.go      # 드리프트 감지
   shell/profile.go       # 셸 프로파일 감지 및 마커 블록 관리
   provision/             # 프로비저닝 모듈 (brew, vscode, omz, mise, defaults)
+  web/                   # Web UI API 서버 (REST API + static 서빙)
+static/                  # Web UI 프론트엔드 (go:embed, HTML + Tailwind CSS + JS)
 ```
 
 ## 개발

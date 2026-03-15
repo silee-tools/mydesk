@@ -6,6 +6,7 @@ import (
 
 	"github.com/silee-tools/mydesk/internal/config"
 	"github.com/silee-tools/mydesk/internal/drift"
+	"github.com/silee-tools/mydesk/internal/entry"
 	"github.com/silee-tools/mydesk/internal/ui"
 )
 
@@ -15,7 +16,7 @@ func RunDiff(opts GlobalOpts) error {
 		return err
 	}
 
-	entries, err := collectEntries(cfg)
+	entries, err := entry.Collect(cfg)
 	if err != nil {
 		return err
 	}

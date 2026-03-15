@@ -50,6 +50,19 @@ func main() {
 		err = cmd.RunSetup(opts)
 	case "install-shell":
 		err = cmd.RunInstallShell(opts)
+	case "web":
+		port := 8080
+		noOpen := false
+		for i := 1; i < len(args); i++ {
+			switch {
+			case args[i] == "--no-open":
+				noOpen = true
+			case args[i] == "--port" && i+1 < len(args):
+				i++
+				fmt.Sscanf(args[i], "%d", &port)
+			}
+		}
+		err = cmd.RunWeb(opts, port, noOpen, resolveVersion())
 	case "version":
 		fmt.Printf("mydesk %s\n", resolveVersion())
 	case "help":
@@ -90,6 +103,7 @@ Commands:
   sync           Export current system state to config repo
   setup          Full provisioning (brew, omz, mise, link, defaults, vscode)
   install-shell  Write MYDESK_CONFIG_DIR to shell profile
+  web            Start web UI (--port 8080 --no-open)
   version        Print version
   help           Show this help
 

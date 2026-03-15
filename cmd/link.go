@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/silee-tools/mydesk/internal/config"
+	"github.com/silee-tools/mydesk/internal/entry"
 	"github.com/silee-tools/mydesk/internal/linker"
-	"github.com/silee-tools/mydesk/internal/native"
 	"github.com/silee-tools/mydesk/internal/ui"
 )
 
@@ -15,7 +15,7 @@ func RunLink(opts GlobalOpts) error {
 		return err
 	}
 
-	entries, err := collectEntries(cfg)
+	entries, err := entry.Collect(cfg)
 	if err != nil {
 		return err
 	}
@@ -38,32 +38,4 @@ func RunLink(opts GlobalOpts) error {
 		return fmt.Errorf("%d link(s) failed", r.Failed)
 	}
 	return nil
-}
-
-func collectEntries(cfg *config.Config) ([]linker.LinkEntry, error) {
-	nativeEntries, err := native.Scan(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("scanning native directories: %w", err)
-	}
-
-	cfgAdapter := &configAdapter{cfg}
-	customEntries, err := linker.ParseLinksConf(cfg.LinksConfPath(), cfgAdapter)
-	if err != nil {
-		return nil, fmt.Errorf("parsing links.conf: %w", err)
-	}
-
-	return linker.MergeEntries(nativeEntries, customEntries), nil
-}
-
-// configAdapter adapts config.Config to linker.ConfigDirProvider
-type configAdapter struct {
-	cfg *config.Config
-}
-
-func (a *configAdapter) ExpandVars(path string) string {
-	return a.cfg.ExpandVars(path)
-}
-
-func (a *configAdapter) GetConfigDir() string {
-	return a.cfg.ConfigDir
 }
