@@ -82,7 +82,10 @@ func RunInit(opts GlobalOpts, targetDir string) error {
 		if dir == "" {
 			dir = "~/my-dotfiles"
 		}
-		home, _ := os.UserHomeDir()
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return fmt.Errorf("cannot determine home directory: %w", err)
+		}
 		if strings.HasPrefix(dir, "~/") {
 			dir = filepath.Join(home, dir[2:])
 		}

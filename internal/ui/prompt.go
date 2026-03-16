@@ -18,7 +18,7 @@ func IsInteractive() bool {
 var stdinReader = bufio.NewReader(os.Stdin)
 
 // SelectOption displays a numbered menu and returns the selected index.
-// defaultIdx is the pre-selected option (0-based). Returns -1 on error.
+// defaultIdx is the pre-selected option (0-based).
 func SelectOption(prompt string, options []string, defaultIdx int) (int, error) {
 	fmt.Println()
 	Info("%s", prompt)
@@ -37,7 +37,7 @@ func SelectOption(prompt string, options []string, defaultIdx int) (int, error) 
 
 	line, err := stdinReader.ReadString('\n')
 	if err != nil {
-		return defaultIdx, nil
+		return -1, fmt.Errorf("input cancelled")
 	}
 	line = strings.TrimSpace(line)
 
@@ -54,6 +54,7 @@ func SelectOption(prompt string, options []string, defaultIdx int) (int, error) 
 }
 
 // Confirm displays a Y/n or y/N prompt and returns the user's choice.
+// On EOF or unrecognized input, returns false (safe default).
 func Confirm(prompt string, defaultYes bool) (bool, error) {
 	hint := "[Y/n]"
 	if !defaultYes {
@@ -64,7 +65,7 @@ func Confirm(prompt string, defaultYes bool) (bool, error) {
 
 	line, err := stdinReader.ReadString('\n')
 	if err != nil {
-		return defaultYes, nil
+		return false, fmt.Errorf("input cancelled")
 	}
 	line = strings.TrimSpace(strings.ToLower(line))
 
@@ -78,7 +79,8 @@ func Confirm(prompt string, defaultYes bool) (bool, error) {
 	case "n", "no":
 		return false, nil
 	default:
-		return defaultYes, nil
+		Warning("unrecognized input %q, treating as 'no'", line)
+		return false, nil
 	}
 }
 
@@ -88,7 +90,7 @@ func ReadLine(prompt string) (string, error) {
 
 	line, err := stdinReader.ReadString('\n')
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("input cancelled")
 	}
 
 	return strings.TrimSpace(line), nil

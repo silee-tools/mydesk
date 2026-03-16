@@ -114,7 +114,10 @@ func RunInstallShell(opts GlobalOpts) error {
 
 // promptConfigDir interactively asks the user to select a config directory.
 func promptConfigDir() (string, error) {
-	home, _ := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("cannot determine home directory: %w", err)
+	}
 	candidates := discoverConfigCandidates(home)
 
 	manualOption := "Enter path manually"

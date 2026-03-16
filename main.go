@@ -59,7 +59,10 @@ func main() {
 				noOpen = true
 			case args[i] == "--port" && i+1 < len(args):
 				i++
-				fmt.Sscanf(args[i], "%d", &port)
+				if _, scanErr := fmt.Sscanf(args[i], "%d", &port); scanErr != nil {
+					ui.Error("invalid port: %s", args[i])
+					os.Exit(1)
+				}
 			}
 		}
 		err = cmd.RunWeb(opts, port, noOpen, resolveVersion())

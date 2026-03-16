@@ -56,7 +56,10 @@ func validateConfigDir(dir, home string) error {
 		{filepath.Join(home, "Library", "Application Support", "Code", "User"), "VS Code User dir (vscode/ native dir target)"},
 	}
 
-	resolved, _ := filepath.EvalSymlinks(dir)
+	resolved, err := filepath.EvalSymlinks(dir)
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("cannot resolve config directory: %w", err)
+	}
 	if resolved == "" {
 		resolved = dir
 	}

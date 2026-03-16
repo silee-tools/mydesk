@@ -90,8 +90,13 @@ func (s *Server) handleProvisionAction(w http.ResponseWriter, r *http.Request) {
 
 	// Extract action from path: /api/provision/{action}
 	action := strings.TrimPrefix(r.URL.Path, "/api/provision/")
-	if action == "" || action == "status" {
-		writeError(w, http.StatusBadRequest, "invalid action")
+	allowed := map[string]bool{
+		"brew-sync": true, "brew-install": true,
+		"vscode-sync": true, "vscode-install": true,
+		"omz-install": true, "mise-install": true, "apply-defaults": true,
+	}
+	if !allowed[action] {
+		writeError(w, http.StatusBadRequest, "unknown action: "+action)
 		return
 	}
 

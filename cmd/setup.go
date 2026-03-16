@@ -26,7 +26,11 @@ func RunSetup(opts GlobalOpts) error {
 		{"Oh-My-Zsh", func() error { return provision.OMZInstall(cfg.ConfigDir, runner) }},
 		{"mise runtimes", func() error { return provision.MiseInstall(runner) }},
 		{"Symlinks", func() error { return RunLink(opts) }},
-		{"Shell profile", func() error { return RunInstallShell(opts) }},
+		{"Shell profile", func() error {
+			setupOpts := opts
+			setupOpts.ConfigDir = cfg.ConfigDir
+			return RunInstallShell(setupOpts)
+		}},
 		{"macOS defaults", func() error { return provision.ApplyDefaults(cfg.ConfigDir, runner) }},
 		{"VS Code extensions", func() error { return provision.VSCodeInstall(cfg.ConfigDir, runner) }},
 	}

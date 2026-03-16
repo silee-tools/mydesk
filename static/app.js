@@ -18,7 +18,11 @@ const App = {
       const el = document.getElementById('nav-config-dir');
       el.textContent = data.configDir;
       el.title = data.configDir;
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      document.getElementById('nav-version').textContent = 'error';
+      document.getElementById('nav-config-dir').textContent = 'Connection failed';
+      toast('Failed to load status: ' + e.message, 'error');
+    }
   },
 
   route() {
@@ -89,6 +93,12 @@ function toast(message, type = 'info') {
   el.textContent = message;
   container.appendChild(el);
   setTimeout(() => el.remove(), 4000);
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
 }
 
 function h(tag, attrs, ...children) {

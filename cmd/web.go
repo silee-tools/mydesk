@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"runtime"
 
@@ -33,7 +34,10 @@ func openBrowser(url string) {
 	case "linux":
 		cmd = exec.Command("xdg-open", url)
 	default:
+		fmt.Fprintf(os.Stderr, "Auto-open not supported on %s. Open manually: %s\n", runtime.GOOS, url)
 		return
 	}
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		fmt.Fprintf(os.Stderr, "Could not open browser. Open manually: %s\n", url)
+	}
 }

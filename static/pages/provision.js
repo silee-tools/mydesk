@@ -36,7 +36,7 @@ App.registerPage('provision', async (root) => {
 
     root.appendChild(grid);
   } catch (e) {
-    root.innerHTML = `<div class="card"><p class="text-red-600">Error: ${e.message}</p></div>`;
+    root.innerHTML = `<div class="card"><p class="text-red-600">Error: ${esc(e.message)}</p></div>`;
   }
 });
 

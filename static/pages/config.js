@@ -61,7 +61,7 @@ App.registerPage('config', async (root) => {
 
       contentArea.appendChild(card);
     } catch (e) {
-      contentArea.innerHTML = `<p class="text-red-600">Error: ${e.message}</p>`;
+      contentArea.innerHTML = `<p class="text-red-600">Error: ${esc(e.message)}</p>`;
     }
   }
 
@@ -91,7 +91,7 @@ App.registerPage('config', async (root) => {
         contentArea.appendChild(card);
       }
     } catch (e) {
-      contentArea.innerHTML = `<p class="text-red-600">Error: ${e.message}</p>`;
+      contentArea.innerHTML = `<p class="text-red-600">Error: ${esc(e.message)}</p>`;
     }
   }
 
@@ -99,8 +99,4 @@ App.registerPage('config', async (root) => {
   renderLinksConf();
 });
 
-function esc(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
+// esc() is defined in app.js
