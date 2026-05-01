@@ -116,7 +116,7 @@ func (l *Linker) unlinkOne(e LinkEntry, r *LinkReport) error {
 
 	if l.DryRun {
 		ui.DryRun("unlink %s", e.Target)
-		r.Linked++
+		r.Skipped++
 		return nil
 	}
 

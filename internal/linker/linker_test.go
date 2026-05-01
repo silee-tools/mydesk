@@ -133,6 +133,45 @@ func TestLinkDryRun(t *testing.T) {
 	}
 }
 
+func TestUnlinkDryRunReportsSkipped(t *testing.T) {
+	srcDir := t.TempDir()
+	dstDir := t.TempDir()
+
+	srcFile := filepath.Join(srcDir, "test.conf")
+	if err := os.WriteFile(srcFile, []byte("content"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	dstFile := filepath.Join(dstDir, "test.conf")
+	if err := os.Symlink(srcFile, dstFile); err != nil {
+		t.Fatal(err)
+	}
+
+	entries := []LinkEntry{{
+		Source: "test.conf",
+		Target: dstFile,
+		SrcAbs: srcFile,
+		DstAbs: dstFile,
+	}}
+
+	l := New(entries, true) // dry-run
+	r := l.Unlink()
+	if r.Skipped != 1 {
+		t.Errorf("skipped = %d, want 1", r.Skipped)
+	}
+	if r.Linked != 0 {
+		t.Errorf("linked = %d, want 0", r.Linked)
+	}
+
+	target, err := os.Readlink(dstFile)
+	if err != nil {
+		t.Fatal("dry-run should leave symlink in place")
+	}
+	if target != srcFile {
+		t.Errorf("symlink points to %q, want %q", target, srcFile)
+	}
+}
+
 func TestLinkSourceNotFound(t *testing.T) {
 	dstDir := t.TempDir()
 	dstFile := filepath.Join(dstDir, "test.conf")
