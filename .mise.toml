@@ -18,7 +18,7 @@ run = "gofmt -w ."
 description = "Format code"
 
 [tasks.fmt-check]
-run = "test -z $(gofmt -l .)"
+run = "test -z \"$(gofmt -l .)\""
 description = "Check formatting (CI)"
 
 [tasks.install]
