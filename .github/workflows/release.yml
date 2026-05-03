@@ -1,0 +1,123 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "SemVer bump to apply when version is empty"
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+      version:
+        description: "Explicit version, with or without leading v"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Verify build and tests
+        run: |
+          go build -o /dev/null .
+          go test ./...
+
+      - name: Resolve release version
+        id: version
+        env:
+          INPUT_BUMP: ${{ github.event.inputs.bump }}
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          set -euo pipefail
+
+          git fetch --tags --force
+          latest_tag=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1)
+          if [ -z "${latest_tag}" ]; then
+            latest_tag="v0.0.0"
+          fi
+          current="${latest_tag#v}"
+          IFS='.' read -r major minor patch <<< "${current}"
+
+          bump="${INPUT_BUMP:-patch}"
+          requested="${INPUT_VERSION:-}"
+
+          if [ -n "${requested}" ]; then
+            version="${requested#v}"
+          else
+            case "${bump}" in
+              patch) version="${major}.${minor}.$((patch + 1))" ;;
+              minor) version="${major}.$((minor + 1)).0" ;;
+              major) version="$((major + 1)).0.0" ;;
+              *) echo "Unsupported bump '${bump}'. Use patch, minor, major, or provide version." >&2; exit 1 ;;
+            esac
+          fi
+
+          if ! [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version '${version}'. Expected MAJOR.MINOR.PATCH." >&2
+            exit 1
+          fi
+
+          tag="v${version}"
+          if git rev-parse "${tag}" >/dev/null 2>&1; then
+            echo "Tag ${tag} already exists." >&2
+            exit 1
+          fi
+
+          echo "latest_tag=${latest_tag}" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+      - name: Create and push release tag
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${TAG}" -m "${TAG}"
+          git push origin "${TAG}"
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: gh release create "${TAG}" --title "${TAG}" --generate-notes
+
+      - name: Update Homebrew formula
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          curl -sL "https://github.com/silee-tools/mydesk/archive/refs/tags/${TAG}.tar.gz" -o source.tar.gz
+          SHA256=$(sha256sum source.tar.gz | cut -d' ' -f1)
+
+          if [ -z "${HOMEBREW_TAP_TOKEN:-}" ]; then
+            echo "HOMEBREW_TAP_TOKEN is required to update the Homebrew tap" >&2
+            exit 1
+          fi
+
+          git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/silee-tools/homebrew-tap.git" tap
+          sed -i "s|url \"https://github.com/silee-tools/mydesk/archive/refs/tags/.*\"|url \"https://github.com/silee-tools/mydesk/archive/refs/tags/${TAG}.tar.gz\"|" tap/Formula/mydesk.rb
+          sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" tap/Formula/mydesk.rb
+
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/mydesk.rb
+          git diff --cached --quiet || { git commit -m "mydesk: update to ${TAG}" && git push; }
